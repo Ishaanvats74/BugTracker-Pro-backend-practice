@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       createdAt,
       emailAddress,
     });
-    console.log("Document written with ID: ", docRef.id);
+    console.log("Document written with ID: ",docRef.id);
     return NextResponse.json({ result: "added a bug" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
@@ -38,5 +38,5 @@ export async function GET(req: Request) {
   });
   return NextResponse.json({ result }, { status: 200 });
 }
-// export async function UPDATE(req: Request) {}
+
 // export async function DELETE(req: Request) {}

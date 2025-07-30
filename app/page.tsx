@@ -1,6 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 
 type bug = {
@@ -10,14 +10,13 @@ type bug = {
   status: string;
   title: string;
   emailAddress:string;
+  bugId:string
 };
 export default function Home() {
-  const { isSignedIn, user } = useUser();
+  const {  user } = useUser();
   const [result, setResult] = useState<bug[]>([]);
-  const router = useRouter();
-  if (!isSignedIn) {
-    router.push("/sign-in");
-  }
+
+
 
   const fetchData = async (userEmail:unknown) => {
     const res = await fetch(`/api/bug?email=${userEmail}`, {
@@ -31,7 +30,7 @@ export default function Home() {
     const userEmail = user?.emailAddresses[0]?.emailAddress;
     fetchData(userEmail);
 
-  }, [isSignedIn,user]);
+  }, [user]);
 
   return (
      <div className="min-h-screen bg-black text-green-400 font-mono pt-28 px-6 overflow-y-auto">
