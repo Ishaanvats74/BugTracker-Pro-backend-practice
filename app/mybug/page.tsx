@@ -23,6 +23,7 @@ const Page = () => {
   if (!isSignedIn) {
     router.push("/sign-in");
   }
+  const userEmail = user?.emailAddresses[0]?.emailAddress;
   const fetchData = async (userEmail: unknown) => {
     const res = await fetch(`/api/yourBugs?email=${userEmail}`, {
       method: "GET",
@@ -33,9 +34,18 @@ const Page = () => {
   };
 
   useEffect(() => {
-    const userEmail = user?.emailAddresses[0]?.emailAddress;
     fetchData(userEmail);
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user, userEmail]);
+
+  const handleDelete = async (item: bug) => {
+    const res = await fetch("/api/yourBugs", {
+      method: "DELETE",
+      body: JSON.stringify({ userEmail, BugId: item.id }),
+    });
+    const data = await res.json();
+    console.log(data);
+    fetchData(userEmail);
+  };
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono pt-28 px-6 overflow-y-auto">
       <h1 className="text-3xl font-bold text-center mb-8">
@@ -64,13 +74,26 @@ const Page = () => {
               </span>
             </div>
             <div className="relative">
-              <button onClick={() => setDropDown((r) => (r === item.id ? null : item.id))} className="text-green-300 font-bold px-2 py-1 hover:text-white">...</button>
+              <button
+                onClick={() =>
+                  setDropDown((r) => (r === item.id ? null : item.id))
+                }
+                className="text-green-300 font-bold px-2 py-1 hover:text-white"
+              >
+                ...
+              </button>
               {dropDown === item.id && (
                 <div className="absolute right-0 top-8 bg-gray-800 border border-green-600 rounded-md p-2 text-sm z-10 w-28">
-                  <Link href={`/bugid/${item.id}`} className="block w-full text-left hover:bg-green-700 px-2 py-1 rounded">
+                  <Link
+                    href={`/bugid/${item.id}`}
+                    className="block w-full text-left hover:bg-green-700 px-2 py-1 rounded"
+                  >
                     Edit
                   </Link>
-                  <button className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded">
+                  <button
+                    className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded"
+                    onClick={() => handleDelete(item)}
+                  >
                     Delete
                   </button>
                 </div>

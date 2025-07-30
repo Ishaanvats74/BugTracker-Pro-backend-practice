@@ -19,7 +19,7 @@ type bug = {
 };
 
 export default function Page({ params }: PageProps) {
-    const { BugId } = use(params);
+  const { BugId } = use(params);
   const { user } = useUser();
   const [result, setResult] = useState<bug[]>([]);
   const [input, setInput] = useState<string>("");
@@ -28,26 +28,22 @@ export default function Page({ params }: PageProps) {
   const [status, setStatus] = useState<string>("");
   const router = useRouter();
 
-  
   useEffect(() => {
-      const userEmail = user?.emailAddresses[0]?.emailAddress;
-      const fetchData = async (userEmail: unknown) => {
-        const res = await fetch(
-          `/api/editBug?email=${userEmail}&id=${BugId}`,
-          {
-            method: "GET",
-          }
-        );
-        const data = await res.json();
-        console.log(data);
-        setResult(data.result);
-        setInput(data.result[0].title);
-        setTextarea(data.result[0].description);
-        setSeverity(data.result[0].severity);
-        setStatus(data.result[0].status);
-      };
+    const userEmail = user?.emailAddresses[0]?.emailAddress;
+    const fetchData = async (userEmail: unknown) => {
+      const res = await fetch(`/api/editBug?email=${userEmail}&id=${BugId}`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      console.log(data);
+      setResult(data.result);
+      setInput(data.result[0].title);
+      setTextarea(data.result[0].description);
+      setSeverity(data.result[0].severity);
+      setStatus(data.result[0].status);
+    };
     fetchData(userEmail);
-  }, [user,BugId]);
+  }, [user, BugId]);
 
   const handleCreate = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,7 +61,7 @@ export default function Page({ params }: PageProps) {
       body: JSON.stringify(form),
     });
     const data = await res.json();
-    console.log(data)
+    console.log(data);
     router.push("/");
   };
   return (
