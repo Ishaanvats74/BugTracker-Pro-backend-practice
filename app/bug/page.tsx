@@ -3,15 +3,20 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 const Page = () => {
   const router = useRouter();
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const emailAddress = user?.emailAddresses[0].emailAddress;
 
-  if (!isSignedIn) {
-    router.push("/sign-in");
+  useEffect(() => {
+    if (!isSignedIn && isLoaded) {
+      router.push("/sign-in");
+    }
+  }, [isSignedIn, isLoaded, router]);
+  if (!isLoaded || !isSignedIn) {
+    return null;
   }
   const handleCreate = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -15,15 +15,12 @@ type bug = {
 };
 
 const Page = () => {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const [result, setResult] = useState<bug[]>([]);
   const router = useRouter();
   const [dropDown, setDropDown] = useState<string | null>(null);
-
-  if (!isSignedIn) {
-    router.push("/sign-in");
-  }
   const userEmail = user?.emailAddresses[0]?.emailAddress;
+
   const fetchData = async (userEmail: unknown) => {
     const res = await fetch(`/api/yourBugs?email=${userEmail}`, {
       method: "GET",
@@ -32,10 +29,16 @@ const Page = () => {
     console.log(data);
     setResult(data.result);
   };
-
   useEffect(() => {
+    if (!isSignedIn) {
+      router.push("/sign-in");
+    }
     fetchData(userEmail);
-  }, [isSignedIn, user, userEmail]);
+  }, [isSignedIn, user, userEmail, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return null;
+  }
 
   const handleDelete = async (item: bug) => {
     const res = await fetch("/api/yourBugs", {
