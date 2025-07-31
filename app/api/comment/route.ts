@@ -53,7 +53,10 @@ export async function DELETE(req:Request) {
     const commentData = Docs.data()
 
     if(!commentData){
-        return null
+        return NextResponse.json(
+        { error: "Missing required query parameters" },
+        { status: 400 }
+      );
     }
 
     if(commentData.authorId !== email){
