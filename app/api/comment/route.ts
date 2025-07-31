@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
-import { addDoc, collection, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, where } from "firebase/firestore";
 import { NextResponse } from "next/server";
 import { query, getDocs } from "firebase/firestore";
+import { error } from "console";
 
 export async function POST(req: Request) {
   try {
@@ -35,4 +36,35 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({ result }, { status: 200 });
+}
+
+
+export async function DELETE(req:Request) {
+    const {searchParams} = new URL(req.url)
+    const email = searchParams.get("email");
+  const commentid = searchParams.get("commentid");
+  const bugId = searchParams.get("bugId");
+
+
+    if (!commentid || !email || !bugId){
+        return NextResponse.json({error:"sdfsdfsd"},{status:500})
+    }
+    const docRef = doc(db, "comments", commentid);
+    const Docs = await getDoc(docRef)
+    const commentData = Docs.data()
+
+    if(!commentData){
+        return null
+    }
+
+    if(commentData.authorId !== email){
+        return NextResponse.json({error:"You are not author of this comment"},{status:500})
+    }
+
+    if(commentData.bugId !== bugId){
+        return NextResponse.json({error:"You are not author of this comment"},{status:500})
+    }
+    await deleteDoc(docRef);
+
+  return NextResponse.json({ success: true }, { status: 200 });
 }

@@ -1,6 +1,5 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
 
 import React, { useEffect, useState } from "react";
 
@@ -60,18 +59,30 @@ export default function Home() {
       console.log(data);
       setcommentInput("");
       fetchData();
-      handlefetch(item);
+      handlefetch(item.id);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handlefetch = async (item: bug) => {
-    const res = await fetch(`/api/comment?bugId=${item.id}`, {
+  const handlefetch = async (bugId: string) => {
+    const res = await fetch(`/api/comment?bugId=${bugId}`, {
       method: "GET",
     });
     const data = await res.json();
     setComment(data.result);
+  };
+  const DeleteData = async (item: comment) => {
+    const res = await fetch(`/api/comment?email=${userEmail}&commentid=${item.id}&bugId=${item.bugId}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    console.log(data);
+    handlefetch(item.bugId)
+  };
+  const handleEdit = async (item: comment) => {
+    DeleteData(item);
+    setcommentInput(item.text);
   };
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono pt-28 px-6 overflow-y-auto">
@@ -138,7 +149,7 @@ export default function Home() {
               className="mt-4 mb-2 px-4 py-2 rounded bg-green-800 hover:bg-green-700 text-white font-semibold"
               onClick={() => {
                 setShowCommentId(showCommentId === item.id ? null : item.id);
-                handlefetch(item);
+                handlefetch(item.id);
               }}
             >
               {showCommentId === item.id ? "Hide Comments" : "Show Comments"}
@@ -199,13 +210,13 @@ export default function Home() {
                             </button>
                             {dropDown === item.id && (
                               <div className="absolute right-0 top-4 bg-gray-800 border border-green-600 rounded-md p-2 text-sm z-10 w-28">
-                                <Link
-                                  href={`/bugid/${item.id}`}
+                                <button
+                                  onClick={() => handleEdit(item)}
                                   className="block w-full text-left hover:bg-green-700 px-2 py-1 rounded"
                                 >
                                   Edit
-                                </Link>
-                                <button className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded">
+                                </button>
+                                <button onClick={() => DeleteData(item)} className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded">
                                   Delete
                                 </button>
                               </div>
