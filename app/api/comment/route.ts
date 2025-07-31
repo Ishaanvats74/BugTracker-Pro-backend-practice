@@ -30,7 +30,7 @@ export async function GET(req: Request) {
   const querySnapshot = await getDocs(q);
 
   querySnapshot.forEach((doc) => {
-    result.push(doc.data());
+    result.push({...doc.data(),id:doc.id});
     console.log(doc.id, " => ", doc.data());
   });
 

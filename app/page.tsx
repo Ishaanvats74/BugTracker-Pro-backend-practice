@@ -1,5 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 import React, { useEffect, useState } from "react";
 
@@ -18,6 +19,7 @@ type comment = {
   bugId: string;
   createdAt: string;
   text: string;
+  id: string;
 };
 export default function Home() {
   const { user } = useUser();
@@ -26,6 +28,7 @@ export default function Home() {
   const [commentInput, setcommentInput] = useState<string>("");
   const userEmail = user?.emailAddresses[0]?.emailAddress;
   const [comment, setComment] = useState<comment[]>([]);
+  const [dropDown, setDropDown] = useState<string | null>(null);
 
   const fetchData = async () => {
     const res = await fetch(`/api/bug`, {
@@ -56,8 +59,8 @@ export default function Home() {
       const data = await res.json();
       console.log(data);
       setcommentInput("");
-      fetchData()
-      handlefetch(item)
+      fetchData();
+      handlefetch(item);
     } catch (error) {
       console.log(error);
     }
@@ -167,23 +170,55 @@ export default function Home() {
                   </button>
                 </div>
                 <div className="space-y-5">
+                  {comment.map((item) => (
+                    <div
+                      key={item.createdAt}
+                      className="flex flex-col gap-2 bg-green-950 border border-green-800 p-4 rounded-lg shadow-sm hover:shadow-green-500/10 transition"
+                    >
+                      <div className="text-xs text-green-400/80 mb-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-green-300">
+                              {item.authorId}
+                            </span>
+                            <span className="text-green-400 text-[11px]">
+                              {item.createdAt}
+                            </span>
+                          </div>
 
-                {comment.map((item) => (
-                  <div
-                  key={item.createdAt}
-                  className="flex flex-col gap-2 bg-green-950 border border-green-800 p-4 rounded-lg shadow-sm hover:shadow-green-500/10 transition"
-                  >
-                    <div className="flex items-center justify-between text-xs text-green-400/80 mb-1">
-                      <span className="font-semibold text-green-300">
-                        {item.authorId}
-                      </span>
-                      <span>{item.createdAt}</span>
+                          <div className="relative">
+                            <button
+                              className="text-green-300 hover:text-green-200"
+                              onClick={() =>
+                                setDropDown(
+                                  dropDown === item.id ? null : item.id
+                                )
+                              }
+                            >
+                              ...
+                            </button>
+                            {dropDown === item.id && (
+                              <div className="absolute right-0 top-4 bg-gray-800 border border-green-600 rounded-md p-2 text-sm z-10 w-28">
+                                <Link
+                                  href={`/bugid/${item.id}`}
+                                  className="block w-full text-left hover:bg-green-700 px-2 py-1 rounded"
+                                >
+                                  Edit
+                                </Link>
+                                <button className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded">
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-green-200 text-sm leading-relaxed whitespace-pre-line">
+                        {item.text}
+                      </p>
                     </div>
-                    <p className="text-green-200 text-sm leading-relaxed whitespace-pre-line">
-                      {item.text}
-                    </p>
-                  </div>
-                ))}
+                  ))}
                 </div>
               </div>
             )}
