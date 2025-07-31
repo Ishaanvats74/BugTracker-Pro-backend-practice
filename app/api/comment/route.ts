@@ -65,5 +65,5 @@ export async function DELETE(req:Request) {
     }
     await deleteDoc(docRef);
 
-  return NextResponse.json({ success: :"deleted" }, { status: 200 });
+  return NextResponse.json({ success :"deleted" }, { status: 200 });
 }
