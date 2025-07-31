@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type bug = {
   createdAt: string;
@@ -10,14 +10,25 @@ type bug = {
   status: string;
   title: string;
   emailAddress: string;
+  id: string;
+};
+
+type comment = {
+  authorId: string;
   bugId: string;
+  createdAt: string;
+  text: string;
 };
 export default function Home() {
   const { user } = useUser();
   const [result, setResult] = useState<bug[]>([]);
+  const [showCommentId, setShowCommentId] = useState<string | null>(null);
+  const [commentInput, setcommentInput] = useState<string>("");
+  const userEmail = user?.emailAddresses[0]?.emailAddress;
+  const [comment, setComment] = useState<comment[]>([]);
 
-  const fetchData = async (userEmail: unknown) => {
-    const res = await fetch(`/api/bug?email=${userEmail}`, {
+  const fetchData = async () => {
+    const res = await fetch(`/api/bug`, {
       method: "GET",
     });
     const data = await res.json();
@@ -25,10 +36,40 @@ export default function Home() {
     setResult(data.result);
   };
   useEffect(() => {
-    const userEmail = user?.emailAddresses[0]?.emailAddress;
-    fetchData(userEmail);
-  }, [user]);
+    fetchData();
+  }, [user, userEmail]);
 
+  const hsndlecommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setcommentInput(e.target.value);
+  };
+
+  const handlepPost = async (item: bug) => {
+    try {
+      const res = await fetch("/api/comment", {
+        method: "POST",
+        body: JSON.stringify({
+          text: commentInput,
+          authorId: userEmail,
+          bugId: item.id,
+        }),
+      });
+      const data = await res.json();
+      console.log(data);
+      setcommentInput("");
+      fetchData()
+      handlefetch(item)
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlefetch = async (item: bug) => {
+    const res = await fetch(`/api/comment?bugId=${item.id}`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    setComment(data.result);
+  };
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono pt-28 px-6 overflow-y-auto">
       <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center text-green-300 drop-shadow-md">
@@ -67,7 +108,7 @@ export default function Home() {
             </div>
 
             {/* Status Bar */}
-            <div className="w-full h-2 bg-green-900 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-green-900 rounded-full overflow-hidden mb-6">
               <div
                 className={`h-full transition-all duration-500 ${
                   item.status === "open"
@@ -90,6 +131,62 @@ export default function Home() {
                 }`}
               ></div>
             </div>
+            <button
+              className="mt-4 mb-2 px-4 py-2 rounded bg-green-800 hover:bg-green-700 text-white font-semibold"
+              onClick={() => {
+                setShowCommentId(showCommentId === item.id ? null : item.id);
+                handlefetch(item);
+              }}
+            >
+              {showCommentId === item.id ? "Hide Comments" : "Show Comments"}
+            </button>
+
+            {showCommentId === item.id && (
+              <div
+                className={`mt-6 border-t border-green-700 pt-4 `}
+                key={item.id}
+              >
+                <h3 className="text-lg font-bold text-green-300 mb-2">
+                  💬 Comments
+                </h3>
+
+                <div className="mb-4">
+                  <textarea
+                    placeholder="Write a comment..."
+                    className="w-full p-3 rounded-lg bg-green-950 text-green-200 border border-green-600 placeholder:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    rows={3}
+                    onChange={hsndlecommentInput}
+                    value={commentInput}
+                  ></textarea>
+                  <button
+                    onClick={() => handlepPost(item)}
+                    className="mt-2 px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold"
+                    disabled={commentInput === ""}
+                  >
+                    Post Comment
+                  </button>
+                </div>
+                <div className="space-y-5">
+
+                {comment.map((item) => (
+                  <div
+                  key={item.createdAt}
+                  className="flex flex-col gap-2 bg-green-950 border border-green-800 p-4 rounded-lg shadow-sm hover:shadow-green-500/10 transition"
+                  >
+                    <div className="flex items-center justify-between text-xs text-green-400/80 mb-1">
+                      <span className="font-semibold text-green-300">
+                        {item.authorId}
+                      </span>
+                      <span>{item.createdAt}</span>
+                    </div>
+                    <p className="text-green-200 text-sm leading-relaxed whitespace-pre-line">
+                      {item.text}
+                    </p>
+                  </div>
+                ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

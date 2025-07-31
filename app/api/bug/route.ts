@@ -27,17 +27,14 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userEmail = searchParams.get("email");
+export async function GET() {
+
   const result: unknown[] = [];
 
-  if (!userEmail) {
-    return NextResponse.json({ result: "Missig email" }, { status: 500 });
-  }
+ 
   const querySnapshot = await getDocs(collectionGroup(db, "bugs"));
   querySnapshot.forEach((doc) => {
-    result.push(doc.data());
+    result.push({...doc.data(),id:doc.id});
     console.log(doc.id, " => ", doc.data());
   });
   return NextResponse.json({ result }, { status: 200 });
