@@ -37,12 +37,17 @@ export default function Home() {
     console.log(data.result);
     setResult(data.result);
   };
+
   useEffect(() => {
     fetchData();
   }, [user, userEmail]);
 
-  const hsndlecommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setcommentInput(e.target.value);
+  const handlefetch = async (item: bug) => {
+    const res = await fetch(`/api/comment?bugId=${item.id}`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    setComment(data.result);
   };
 
   const handlepPost = async (item: bug) => {
@@ -58,31 +63,43 @@ export default function Home() {
       const data = await res.json();
       console.log(data);
       setcommentInput("");
-      fetchData();
-      handlefetch(item.id);
+      handlefetch(item);
     } catch (error) {
       console.log(error);
     }
   };
-
-  const handlefetch = async (bugId: string) => {
-    const res = await fetch(`/api/comment?bugId=${bugId}`, {
-      method: "GET",
-    });
-    const data = await res.json();
-    setComment(data.result);
-  };
   const DeleteData = async (item: comment) => {
-    const res = await fetch(`/api/comment?email=${userEmail}&commentid=${item.id}&bugId=${item.bugId}`, {
-      method: "DELETE",
-    });
+    const res = await fetch(
+      `/api/comment?email=${userEmail}&commentid=${item.id}&bugId=${item.bugId}`,
+      {
+        method: "DELETE",
+      }
+    );
     const data = await res.json();
     console.log(data);
-    handlefetch(item.bugId)
+    handlefetch({id:item.bugId} as bug);
   };
+  const hsndlecommentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setcommentInput(e.target.value);
+  };
+  const handleshowComment = (item: bug) => {
+    setShowCommentId(showCommentId === item.id ? null : item.id);
+    handlefetch(item);
+  };
+
   const handleEdit = async (item: comment) => {
     DeleteData(item);
     setcommentInput(item.text);
+  };
+
+  const handleEnter = async (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    item: bug
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handlepPost(item);
+    }
   };
   return (
     <div className="min-h-screen bg-black text-green-400 font-mono pt-28 px-6 overflow-y-auto">
@@ -148,8 +165,7 @@ export default function Home() {
             <button
               className="mt-4 mb-2 px-4 py-2 rounded bg-green-800 hover:bg-green-700 text-white font-semibold"
               onClick={() => {
-                setShowCommentId(showCommentId === item.id ? null : item.id);
-                handlefetch(item.id);
+                handleshowComment(item);
               }}
             >
               {showCommentId === item.id ? "Hide Comments" : "Show Comments"}
@@ -170,6 +186,7 @@ export default function Home() {
                     className="w-full p-3 rounded-lg bg-green-950 text-green-200 border border-green-600 placeholder:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
                     rows={3}
                     onChange={hsndlecommentInput}
+                    onKeyDown={(e) => handleEnter(e, item)}
                     value={commentInput}
                   ></textarea>
                   <button
@@ -216,7 +233,10 @@ export default function Home() {
                                 >
                                   Edit
                                 </button>
-                                <button onClick={() => DeleteData(item)} className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded">
+                                <button
+                                  onClick={() => DeleteData(item)}
+                                  className="block w-full text-left hover:bg-red-700 px-2 py-1 rounded"
+                                >
                                   Delete
                                 </button>
                               </div>

@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { addDoc, collection, deleteDoc, doc, getDoc, where } from "firebase/firestore";
 import { NextResponse } from "next/server";
 import { query, getDocs } from "firebase/firestore";
-import { error } from "console";
 
 export async function POST(req: Request) {
   try {
